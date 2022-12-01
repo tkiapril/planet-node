@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using Libplanet.Action;
 using Libplanet.Assets;
 using Libplanet.Blockchain;
@@ -9,6 +8,7 @@ using Libplanet.Crypto;
 using Libplanet.Net;
 using Libplanet.Store;
 using Microsoft.Extensions.DependencyInjection;
+using Nito.AsyncEx;
 
 namespace Libplanet.Headless.Hosting;
 
@@ -18,7 +18,8 @@ public static class LibplanetServicesExtensions
         this IServiceCollection services,
         Configuration configuration,
         IEnumerable<T> genesisActions,
-        IImmutableSet<Currency> nativeTokens
+        IImmutableSet<Currency> nativeTokens,
+        AsyncManualResetEvent? readyForServices = null
     )
         where T : IAction, new()
     {
@@ -69,7 +70,8 @@ public static class LibplanetServicesExtensions
         services.AddHostedService(provider =>
             new SwarmService<T>(
                 provider.GetRequiredService<Swarm<T>>(),
-                peers
+                peers,
+                readyForServices
             )
         );
 
@@ -78,7 +80,8 @@ public static class LibplanetServicesExtensions
             services.AddHostedService(provider =>
                 new MinerService<T>(
                     provider.GetRequiredService<BlockChain<T>>(),
-                    PrivateKey.FromString(minerPrivateKey)
+                    PrivateKey.FromString(minerPrivateKey),
+                    readyForServices
                 )
             );
         }

@@ -1,6 +1,7 @@
 using Libplanet.Action;
 using Libplanet.Net;
 using Microsoft.Extensions.Hosting;
+using Nito.AsyncEx;
 
 namespace Libplanet.Headless.Hosting;
 
@@ -9,11 +10,14 @@ public class SwarmService<T> : BackgroundService, IDisposable
 {
     private readonly Swarm<T> _swarm;
     private readonly BoundPeer[] _peers;
+    private readonly AsyncManualResetEvent? _readyForServices;
 
-    public SwarmService(Swarm<T> swarm, BoundPeer[] peers)
+    public SwarmService(
+        Swarm<T> swarm, BoundPeer[] peers, AsyncManualResetEvent? readyForServices = null)
     {
         _swarm = swarm;
         _peers = peers;
+        _readyForServices = readyForServices;
     }
 
     private string getPeerString(BoundPeer peer)
@@ -27,6 +31,11 @@ public class SwarmService<T> : BackgroundService, IDisposable
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (_readyForServices is {})
+        {
+            await _readyForServices.WaitAsync(stoppingToken).ConfigureAwait(false);
+        }
+
         _ = _swarm.WaitForRunningAsync().ContinueWith(_ =>
         {
             var peer = _swarm.AsPeer;

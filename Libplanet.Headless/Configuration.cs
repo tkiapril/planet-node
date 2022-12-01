@@ -13,6 +13,8 @@ public class Configuration
 
     public string? StorePath { get; set; }
 
+    public string? IndexPath { get; set; }
+
     public string[]? IceServerStrings { get; set; }
 
     public string[]? PeerStrings { get; set; }

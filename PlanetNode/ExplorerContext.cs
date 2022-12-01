@@ -1,8 +1,10 @@
 using Libplanet.Action;
 using Libplanet.Blockchain;
+using Libplanet.Explorer.Indexing;
 using Libplanet.Explorer.Interfaces;
 using Libplanet.Net;
 using Libplanet.Store;
+using Nito.AsyncEx;
 using PlanetNode.Action;
 
 namespace PlanetNode;
@@ -27,4 +29,8 @@ public class ExplorerContext : IBlockChainContext<PolymorphicAction<PlanetAction
     public BlockChain<PolymorphicAction<PlanetAction>> BlockChain { get; private set; }
 
     public IStore Store { get; private set; }
+
+    public IBlockChainIndex Index { get; private set; }
+
+    public AsyncManualResetEvent ExplorerReady { get; private set; }
 }
